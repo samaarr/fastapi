@@ -1,35 +1,73 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState } from 'react';
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [fruits, setFruits] = useState([]);
+  const [newFruit, setNewFruit] = useState('');
+
+  // Fetch existing fruits
+  const fetchFruits = async () => {
+    try {
+      const response = await fetch('/api/fruits');
+      if (!response.ok) throw new Error('Network response was not ok');
+      const data = await response.json();
+      setFruits(data.fruits);
+    } catch (error) {
+      console.error('Error fetching fruits:', error);
+    }
+  };
+
+  // Add a new fruit
+  const addFruit = async () => {
+    try {
+      const response = await fetch('/api/fruits', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: newFruit }),
+      });
+      if (!response.ok) throw new Error('Failed to add fruit');
+      setNewFruit('');
+      fetchFruits(); // Refresh the list
+    } catch (error) {
+      console.error('Error adding fruit:', error);
+    }
+  };
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
+    <div style={{ padding: '20px', fontFamily: 'Arial' }}>
+      <h1>Fruits List</h1>
+      <div style={{ marginBottom: '20px' }}>
+        <input
+          type="text"
+          value={newFruit}
+          onChange={(e) => setNewFruit(e.target.value)}
+          placeholder="Enter a fruit"
+          style={{ padding: '8px', marginRight: '10px' }}
+        />
+        <button 
+          onClick={addFruit}
+          style={{ padding: '8px 16px', backgroundColor: '#4CAF50', color: 'white', border: 'none', borderRadius: '4px' }}
+        >
+          Add Fruit
         </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
       </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+      <button 
+        onClick={fetchFruits}
+        style={{ padding: '8px 16px', backgroundColor: '#2196F3', color: 'white', border: 'none', borderRadius: '4px', marginBottom: '20px' }}
+      >
+        Load Fruits
+      </button>
+      <ul style={{ listStyle: 'none', padding: 0 }}>
+        {fruits.map((fruit, index) => (
+          <li 
+            key={index} 
+            style={{ padding: '8px', margin: '4px 0', backgroundColor: '#f5f5f5', borderRadius: '4px' }}
+          >
+            {fruit.name}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
 }
 
-export default App
+export default App;
